@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.log
+.pytest_cache/
+venv/
+.env
+report.html
+chromedriver.exe
+geckodriver.exe
+msedgedriver.exe
+.idea/
