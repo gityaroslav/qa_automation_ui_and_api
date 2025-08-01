@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
 import random
 from pages.base_page import BasePage
+from pages.checkout_page_1 import CheckoutPageOne
 
 
 class CartPage(BasePage):
@@ -40,4 +41,9 @@ class CartPage(BasePage):
             name = self.get_element_text(product)
             added_products_names.append(name)
         return added_products_names
+
+    def click_checkout_button(self):
+        self.click_element(self.CHECKOUT_BUTTON)
+        assert self.get_current_url() == "https://www.saucedemo.com/checkout-step-one.html"
+        return CheckoutPageOne(self.driver)
 

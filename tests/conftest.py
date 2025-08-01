@@ -7,6 +7,7 @@ import os
 import shutil
 import tempfile
 from pages.cart_page import CartPage
+from pages.checkout_page_1 import CheckoutPageOne
 from pages.login_page import LoginPage
 from pages.products_page import ProductsPage
 from selenium.webdriver.chrome.options import Options
@@ -79,7 +80,6 @@ def logged_in_standard_user(driver, config, login_page, products_page):
     return products_page
 
 
-# Фікстура для сторінки логіну
 @pytest.fixture(scope="function")
 def login_page(driver):
     """
@@ -88,7 +88,6 @@ def login_page(driver):
     return LoginPage(driver)
 
 
-# Фікстура для сторінки продуктів
 @pytest.fixture(scope="function")
 def products_page(driver):
     """
@@ -98,8 +97,16 @@ def products_page(driver):
 
 
 @pytest.fixture(scope="function")
-def cart_page(driver):  # <-- NEW FIXTURE
+def cart_page(driver):
     """
     Фікстура, що надає об'єкт CartPage для UI-тестів.
     """
     return CartPage(driver)
+
+
+@pytest.fixture(scope="function")
+def checkout_page_1(driver):
+    """
+    Фікстура, що надає об'єкт CheckoutPage для UI-тестів.
+    """
+    return CheckoutPageOne(driver)

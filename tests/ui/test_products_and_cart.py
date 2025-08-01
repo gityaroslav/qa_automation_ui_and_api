@@ -1,3 +1,5 @@
+import re
+
 
 class TestProductsAndCart():
     def test_add_backpack_to_cart_and_verify_badge(self, logged_in_standard_user):
@@ -47,8 +49,27 @@ class TestProductsAndCart():
         expected_products = [name for name in added_products if name != removed_product]
         assert sorted(products_after_remove) == sorted(expected_products)
 
-
-
-
-
+    def test_successful_checkout_process(self, logged_in_standard_user):
+        products_page = logged_in_standard_user
+        added_products = products_page.add_random_products_to_cart_and_get_names()
+        actual_count = products_page.get_shopping_cart_badge_count()
+        assert str(len(added_products)) == actual_count
+        cart_page = products_page.click_shopping_cart_icon()
+        for item_name in added_products:
+            assert cart_page.is_item_in_cart_by_name(item_name), \
+                f"Товар '{item_name}' не знайдено на сторінці кошика."
+        checkout_page_1 = cart_page.click_checkout_button()
+        checkout_data = checkout_page_1.generate_checkout_data()
+        checkout_page_2 = checkout_page_1.fill_checkout_form_and_continue(checkout_data)
+        item_total_text = checkout_page_2.get_item_total()
+        tax_text = checkout_page_2.get_tax()
+        total_text = checkout_page_2.get_total()
+        item_total_price = float(re.findall(r'\d+\.\d+', item_total_text)[0])
+        tax_rate = float(re.findall(r'\d+\.\d+', tax_text)[0])
+        total_price = float(re.findall(r'\d+\.\d+', total_text)[0])
+        expected_total = item_total_price + tax_rate
+        assert abs(total_price - expected_total) < 0.01, \
+            f"Помилка в розрахунку загальної суми. Очікувалося {expected_total}, отримано {total_price}."
+        checkout_complete_page = checkout_page_2.click_finish_button()
+        assert checkout_complete_page.is_thank_you_displayed()
 
