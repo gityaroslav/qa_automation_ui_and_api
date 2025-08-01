@@ -46,7 +46,7 @@ class ProductsPage(BasePage):
 
     def add_random_products_to_cart_and_get_names(self):
         product_list = self.find_elements(self.ALL_PRODUCT_LIST)
-        count = random.randint(1, len(product_list))
+        count = random.randint(2, len(product_list))
         random_products = random.sample(product_list, count)
         added_products_texts = []
         for product in random_products:

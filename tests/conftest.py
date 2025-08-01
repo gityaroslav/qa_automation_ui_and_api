@@ -4,13 +4,12 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 import configparser
 import os
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoAlertPresentException
+import shutil
+import tempfile
 from pages.cart_page import CartPage
 from pages.login_page import LoginPage
 from pages.products_page import ProductsPage
-import time
+from selenium.webdriver.chrome.options import Options
 
 
 @pytest.fixture(scope="session")
@@ -24,6 +23,36 @@ def config():
 def driver(config):
     base_url = config['UI_SAUCEDEMO']['BASE_URL']
 
+    # Тимчасовий чистий профіль
+    temp_profile_dir = tempfile.mkdtemp()
+
+    chrome_options = Options()
+
+    # Головне: режим інкогніто + відключення перевірок
+    chrome_options.add_argument("--incognito")
+    chrome_options.add_argument(f"--user-data-dir={temp_profile_dir}")
+    chrome_options.add_argument("--no-first-run")
+    chrome_options.add_argument("--no-default-browser-check")
+    chrome_options.add_argument("--disable-default-apps")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-popup-blocking")
+    chrome_options.add_argument("--disable-notifications")
+    chrome_options.add_argument("--disable-infobars")
+    chrome_options.add_argument("--disable-save-password-bubble")
+    chrome_options.add_argument("--disable-translate")
+    chrome_options.add_argument("--start-maximized")
+
+    # Відключення features, які відповідають за перевірку паролів
+    chrome_options.add_argument(
+        "--disable-features=PasswordCheck,AutofillServerCommunication,PasswordManagerOnboarding,OptimizationGuideModelDownloading,Translate")
+
+    # Повна заборона менеджера паролів
+    chrome_options.add_experimental_option("prefs", {
+        "credentials_enable_service": False,
+        "profile.password_manager_enabled": False,
+        "profile.default_content_setting_values.notifications": 2
+    })
+
     chromedriver_path = os.path.join(os.getcwd(), 'chromedriver.exe')
     if os.path.exists(chromedriver_path):
         service = ChromeService(executable_path=chromedriver_path)
@@ -31,16 +60,15 @@ def driver(config):
         try:
             service = ChromeService(ChromeDriverManager().install())
         except Exception as e:
-            pytest.fail(
-                f"Не вдалося встановити ChromeDriver за допомогою WebDriverManager: {e}. Переконайтесь, що chromedriver.exe знаходиться в корені проєкту або встановіть webdriver-manager.")
+            pytest.fail(f"Не вдалося встановити ChromeDriver: {e}")
 
-    driver = webdriver.Chrome(service=service)
-    driver.maximize_window()
+    driver = webdriver.Chrome(service=service, options=chrome_options)
     driver.get(base_url)
 
     yield driver
 
     driver.quit()
+    shutil.rmtree(temp_profile_dir, ignore_errors=True)
 
 
 @pytest.fixture(scope="function")

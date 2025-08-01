@@ -1,5 +1,5 @@
 from selenium.webdriver.common.by import By
-
+import random
 from pages.base_page import BasePage
 
 
@@ -10,7 +10,9 @@ class CartPage(BasePage):
     CART_TITLE = (By.XPATH, "//span[@class='title' and text()='Your Cart']")
     CART_ITEM_NAME_BY_TEXT = lambda self, item_name: (
         By.XPATH, f"//div[@class='inventory_item_name' and text()='{item_name}']")
-
+    REMOVE_CART_BUTTONS = (By.XPATH, "//button[contains(@class, 'btn_secondary') and contains (text(), 'Remove')]")
+    ADDED_PRODUCTS = (By.CLASS_NAME, "inventory_item_name")
+    PRODUCT_NAME_FROM_ADDED_PRODUCTS = (By.XPATH, "./ancestor::div[@class='cart_item_label']//div[@class='inventory_item_name']")
 
     def __init__(self, driver):
         super().__init__(driver)
@@ -22,3 +24,20 @@ class CartPage(BasePage):
         """Перевіряє, чи відображається товар з заданою назвою у кошику."""
         locator = self.CART_ITEM_NAME_BY_TEXT(item_name)
         return self.is_element_displayed(locator)
+
+    def remove_random_item_from_cart(self):
+        all_remove_buttons = self.find_elements(self.REMOVE_CART_BUTTONS)
+        random_remove_button = random.choice(all_remove_buttons)
+        removed_product = random_remove_button.find_element(*self.PRODUCT_NAME_FROM_ADDED_PRODUCTS)
+        removed_product_name = removed_product.text
+        random_remove_button.click()
+        return removed_product_name
+
+    def get_cart_items_names(self):
+        added_products_names = []
+        added_products_list = self.find_elements(self.ADDED_PRODUCTS)
+        for product in added_products_list:
+            name = self.get_element_text(product)
+            added_products_names.append(name)
+        return added_products_names
+
