@@ -1,4 +1,7 @@
 
+from pages.products_page import ProductsPage
+
+
 class TestProductsAndCart():
     def test_add_backpack_to_cart_and_verify_badge(self, logged_in_standard_user):
         products_page = logged_in_standard_user
@@ -92,4 +95,13 @@ class TestProductsAndCart():
                "Сортування від найнижчої до найвищої ціни не працює!"
         assert high_to_low == sorted(high_to_low, reverse=True), \
                "Сортування від найвищої до найнижчої ціни не працює!"
+
+    def test_random_product(self, logged_in_standard_user):
+        products_page = logged_in_standard_user
+        product_data_from_list, product_details_page = products_page.select_random_product_and_get_details()
+        product_data_from_details = product_details_page.get_all_product_details()
+        assert product_data_from_list == product_data_from_details
+        products_page_after_return = product_details_page.click_back_to_products_button()
+        assert isinstance(products_page_after_return, ProductsPage)
+
 
