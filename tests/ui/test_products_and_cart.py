@@ -1,5 +1,3 @@
-import re
-
 
 class TestProductsAndCart():
     def test_add_backpack_to_cart_and_verify_badge(self, logged_in_standard_user):
@@ -62,12 +60,9 @@ class TestProductsAndCart():
         checkout_data = checkout_page_1.generate_checkout_data()
         checkout_page_1.fill_checkout_form(checkout_data)
         checkout_page_2 = checkout_page_1.click_continue_button()
-        item_total_text = checkout_page_2.get_item_total()
-        tax_text = checkout_page_2.get_tax()
-        total_text = checkout_page_2.get_total()
-        item_total_price = float(re.findall(r'\d+\.\d+', item_total_text)[0])
-        tax_rate = float(re.findall(r'\d+\.\d+', tax_text)[0])
-        total_price = float(re.findall(r'\d+\.\d+', total_text)[0])
+        item_total_price = checkout_page_2.get_item_total()
+        tax_rate = checkout_page_2.get_tax()
+        total_price = checkout_page_2.get_total()
         expected_total = item_total_price + tax_rate
         assert abs(total_price - expected_total) < 0.01, \
             f"Помилка в розрахунку загальної суми. Очікувалося {expected_total}, отримано {total_price}."
@@ -86,3 +81,15 @@ class TestProductsAndCart():
         checkout_page_1.click_continue_button()
         assert checkout_page_1.is_error_message_displayed()
         assert checkout_page_1.get_error_message_text().lower() == "error: postal code is required"
+
+    def test_product_sorting(self, logged_in_standard_user):
+        products_page = logged_in_standard_user
+        products_page.select_sorting_products_by_value("lohi")
+        low_to_high = products_page.get_products_prices()
+        products_page.select_sorting_products_by_value("hilo")
+        high_to_low = products_page.get_products_prices()
+        assert low_to_high == sorted(low_to_high), \
+               "Сортування від найнижчої до найвищої ціни не працює!"
+        assert high_to_low == sorted(high_to_low, reverse=True), \
+               "Сортування від найвищої до найнижчої ціни не працює!"
+

@@ -1,5 +1,5 @@
 import random
-
+import re
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 
@@ -14,6 +14,8 @@ class ProductsPage(BasePage):
             ./ancestor::div[contains(@class,'inventory_item_description')]
             //div[contains(@class,'inventory_item_name')]
         """)
+    SORT_SELECT = (By.CLASS_NAME, "product_sort_container")
+    PRODUCTS_PRICES = (By.XPATH, "//div[@class='inventory_item_price']")
 
     def __init__(self, driver):
         super().__init__(driver)
@@ -55,4 +57,16 @@ class ProductsPage(BasePage):
             added_products_texts.append(product_name_element_text)
             product.click()
         return added_products_texts
+
+    def select_sorting_products_by_value(self, value):
+        self.select_by_value(self.SORT_SELECT, value)
+
+    def get_products_prices(self):
+        products_list = self.find_elements(self.PRODUCTS_PRICES)
+        product_prices = []
+        for product in products_list:
+            text = product.text
+            price = float(re.findall(r'\d+\.\d+', text)[0])
+            product_prices.append(price)
+        return product_prices
 

@@ -2,6 +2,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support.ui import Select
 
 
 class BasePage:
@@ -70,3 +71,8 @@ class BasePage:
             return badge_element.text
         except:
             return "0"
+
+    def select_by_value(self, locator, value):
+        select_element = self.find_element(locator)
+        select = Select(select_element)
+        select.select_by_value(value)
