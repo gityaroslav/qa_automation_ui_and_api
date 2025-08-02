@@ -60,7 +60,8 @@ class TestProductsAndCart():
                 f"Товар '{item_name}' не знайдено на сторінці кошика."
         checkout_page_1 = cart_page.click_checkout_button()
         checkout_data = checkout_page_1.generate_checkout_data()
-        checkout_page_2 = checkout_page_1.fill_checkout_form_and_continue(checkout_data)
+        checkout_page_1.fill_checkout_form(checkout_data)
+        checkout_page_2 = checkout_page_1.click_continue_button()
         item_total_text = checkout_page_2.get_item_total()
         tax_text = checkout_page_2.get_tax()
         total_text = checkout_page_2.get_total()
@@ -73,3 +74,15 @@ class TestProductsAndCart():
         checkout_complete_page = checkout_page_2.click_finish_button()
         assert checkout_complete_page.is_thank_you_displayed()
 
+    def test_checkout_without_zip_code(self, logged_in_standard_user):
+        products_page = logged_in_standard_user
+        added_products = products_page.add_random_products_to_cart_and_get_names()
+        actual_count = products_page.get_shopping_cart_badge_count()
+        cart_page = products_page.click_shopping_cart_icon()
+        assert str(len(added_products)) == actual_count
+        checkout_page_1 = cart_page.click_checkout_button()
+        checkout_data = checkout_page_1.generate_checkout_data_with_empty_zip()
+        checkout_page_1.fill_checkout_form(checkout_data)
+        checkout_page_1.click_continue_button()
+        assert checkout_page_1.is_error_message_displayed()
+        assert checkout_page_1.get_error_message_text().lower() == "error: postal code is required"
