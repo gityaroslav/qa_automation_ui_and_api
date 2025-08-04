@@ -9,3 +9,6 @@ chromedriver.exe
 geckodriver.exe
 msedgedriver.exe
 .idea/
+# Allure reports
+allure-results/
+allure-report/

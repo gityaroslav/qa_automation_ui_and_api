@@ -11,6 +11,7 @@ from pages.checkout_page_1 import CheckoutPageOne
 from pages.login_page import LoginPage
 from pages.products_page import ProductsPage
 from selenium.webdriver.chrome.options import Options
+import allure
 
 
 @pytest.fixture(scope="session")
@@ -20,11 +21,12 @@ def config():
     return config
 
 
+# Ця фікстура налаштовує і запускає браузер з розширеними параметрами
 @pytest.fixture(scope="function")
 def driver(config):
     base_url = config['UI_SAUCEDEMO']['BASE_URL']
 
-    # Тимчасовий чистий профіль
+    # Створюємо тимчасову папку для профілю, щоб тестувати в чистому середовищі
     temp_profile_dir = tempfile.mkdtemp()
 
     chrome_options = Options()
@@ -54,14 +56,11 @@ def driver(config):
         "profile.default_content_setting_values.notifications": 2
     })
 
-    chromedriver_path = os.path.join(os.getcwd(), 'chromedriver.exe')
-    if os.path.exists(chromedriver_path):
-        service = ChromeService(executable_path=chromedriver_path)
-    else:
-        try:
-            service = ChromeService(ChromeDriverManager().install())
-        except Exception as e:
-            pytest.fail(f"Не вдалося встановити ChromeDriver: {e}")
+    # Використовуємо ChromeDriverManager для управління драйвером
+    try:
+        service = ChromeService(ChromeDriverManager().install())
+    except Exception as e:
+        pytest.fail(f"Не вдалося встановити ChromeDriver: {e}")
 
     driver = webdriver.Chrome(service=service, options=chrome_options)
     driver.get(base_url)
@@ -69,7 +68,29 @@ def driver(config):
     yield driver
 
     driver.quit()
+    # Видаляємо тимчасовий каталог після завершення тесту
     shutil.rmtree(temp_profile_dir, ignore_errors=True)
+
+
+# Додаємо скриншот до звіту у випадку падіння тесту
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    # This function is a hook that runs after each test and gets its result
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.when == "call" and report.failed:
+        # Check if the test failed and has a driver fixture
+        try:
+            driver = item.funcargs['driver']
+            # Take a screenshot
+            allure.attach(
+                driver.get_screenshot_as_png(),
+                name="screenshot",
+                attachment_type=allure.attachment_type.PNG
+            )
+        except Exception as e:
+            print(f"Could not take a screenshot due to an error: {e}")
 
 
 @pytest.fixture(scope="function")

@@ -5,3 +5,4 @@ configparser==7.0.0
 selenium==4.22.0
 webdriver-manager==4.0.2
 faker==37.5.3
+allure-pytest==2.15.0
