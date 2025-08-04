@@ -5,14 +5,14 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import Select
 
 
-
-
 class BasePage:
     SHOPPING_CART_ICON = (By.ID, "shopping_cart_container")
     SHOPPING_CART_BADGE = (By.CLASS_NAME, "shopping_cart_badge")
     BURGER_MENU_ICON = (By.ID, "react-burger-menu-btn")
     BURGER_LOGOUT = (By.ID, "logout_sidebar_link")
     BURGER_MENU_WRAPPER = (By.CLASS_NAME, "bm-menu-wrap")
+    BURGER_MENU_RESET = (By.ID, "reset_sidebar_link")
+    BURGER_MENU_CLOSE = (By.ID, "react-burger-cross-btn")
 
     def __init__(self, driver):
         self.driver = driver
@@ -73,9 +73,9 @@ class BasePage:
     def get_shopping_cart_badge_count(self):
         try:
             badge_element = self.find_element(self.SHOPPING_CART_BADGE)
-            return badge_element.text
+            return int(badge_element.text)
         except:
-            return "0"
+            return 0
 
     def select_by_value(self, locator, value):
         select_element = self.find_element(locator)
@@ -90,6 +90,10 @@ class BasePage:
         from pages.login_page import LoginPage
         self.click_element(self.BURGER_LOGOUT)
         return LoginPage(self.driver)
+
+    def click_burger_menu_reset(self):
+        self.click_element(self.BURGER_MENU_RESET)
+        self.click_element(self.BURGER_MENU_CLOSE)
 
     def wait_for_element_is_displayed(self, locator):
         return WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located(locator))
