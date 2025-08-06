@@ -1,4 +1,3 @@
-
 from pages.products_page import ProductsPage
 
 
@@ -6,33 +5,25 @@ class TestProductsAndCart():
     def test_add_backpack_to_cart_and_verify_badge(self, logged_in_standard_user):
         products_page = logged_in_standard_user
         products_page.add_sauce_labs_backpack_to_cart()
-
         assert products_page.get_shopping_cart_badge_count() == 1
-        assert not products_page.is_add_backpack_button_displayed(), \
-            "Кнопка 'Add to cart' для рюкзака досі відображається після додавання."
-        assert products_page.is_remove_backpack_button_displayed(), \
-            "Кнопка 'Remove' для рюкзака не відображається після додавання."
+        assert not products_page.is_add_backpack_button_displayed()
+        assert products_page.is_remove_backpack_button_displayed()
 
     def test_add_random_items_to_cart_and_verify_badge(self, logged_in_standard_user):
         products_page = logged_in_standard_user
         expected_count = products_page.add_random_products_to_cart()
         actual_count = products_page.get_shopping_cart_badge_count()
-        assert actual_count == expected_count, \
-            (f"Кількість товарів у кошику не відповідає очікуваній. "
-             f"Очікується '{expected_count}', фактично '{actual_count}'."
-             )
+        assert actual_count == expected_count
 
     def test_add_random_items_and_verify_cart_contents(self, logged_in_standard_user):
         products_page = logged_in_standard_user
         added_products = products_page.add_random_products_to_cart_and_get_names()
         actual_count = products_page.get_shopping_cart_badge_count()
-
         assert len(added_products) == actual_count
         cart_page = products_page.click_shopping_cart_icon()
         assert cart_page.is_cart_page_displayed()
         for item_name in added_products:
-            assert cart_page.is_item_in_cart_by_name(item_name), \
-                f"Товар '{item_name}' не знайдено на сторінці кошика."
+            assert cart_page.is_item_in_cart_by_name(item_name)
 
     def test_remove_items_from_cart(self, logged_in_standard_user):
         products_page = logged_in_standard_user
@@ -41,8 +32,7 @@ class TestProductsAndCart():
         assert len(added_products) == actual_count
         cart_page = products_page.click_shopping_cart_icon()
         for item_name in added_products:
-            assert cart_page.is_item_in_cart_by_name(item_name), \
-                f"Товар '{item_name}' не знайдено на сторінці кошика."
+            assert cart_page.is_item_in_cart_by_name(item_name)
         removed_product = cart_page.remove_random_item_from_cart()
         products_after_remove = cart_page.get_cart_items_names()
         assert len(products_after_remove) == len(added_products) - 1
@@ -57,8 +47,7 @@ class TestProductsAndCart():
         assert len(added_products) == actual_count
         cart_page = products_page.click_shopping_cart_icon()
         for item_name in added_products:
-            assert cart_page.is_item_in_cart_by_name(item_name), \
-                f"Товар '{item_name}' не знайдено на сторінці кошика."
+            assert cart_page.is_item_in_cart_by_name(item_name)
         checkout_page_1 = cart_page.click_checkout_button()
         checkout_data = checkout_page_1.generate_checkout_data()
         checkout_page_1.fill_checkout_form(checkout_data)
@@ -67,8 +56,7 @@ class TestProductsAndCart():
         tax_rate = checkout_page_2.get_tax()
         total_price = checkout_page_2.get_total()
         expected_total = item_total_price + tax_rate
-        assert abs(total_price - expected_total) < 0.01, \
-            f"Помилка в розрахунку загальної суми. Очікувалося {expected_total}, отримано {total_price}."
+        assert abs(total_price - expected_total) < 0.01
         checkout_complete_page = checkout_page_2.click_finish_button()
         assert checkout_complete_page.is_thank_you_displayed()
 
@@ -91,10 +79,8 @@ class TestProductsAndCart():
         low_to_high = products_page.get_products_prices()
         products_page.select_sorting_products_by_value("hilo")
         high_to_low = products_page.get_products_prices()
-        assert low_to_high == sorted(low_to_high), \
-               "Сортування від найнижчої до найвищої ціни не працює!"
-        assert high_to_low == sorted(high_to_low, reverse=True), \
-               "Сортування від найвищої до найнижчої ціни не працює!"
+        assert low_to_high == sorted(low_to_high)
+        assert high_to_low == sorted(high_to_low, reverse=True)
 
     def test_random_product(self, logged_in_standard_user):
         products_page = logged_in_standard_user

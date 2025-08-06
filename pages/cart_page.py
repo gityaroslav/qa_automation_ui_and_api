@@ -13,7 +13,8 @@ class CartPage(BasePage):
         By.XPATH, f"//div[@class='inventory_item_name' and text()='{item_name}']")
     REMOVE_CART_BUTTONS = (By.XPATH, "//button[contains(@class, 'btn_secondary') and contains (text(), 'Remove')]")
     ADDED_PRODUCTS = (By.CLASS_NAME, "inventory_item_name")
-    PRODUCT_NAME_FROM_ADDED_PRODUCTS = (By.XPATH, "./ancestor::div[@class='cart_item_label']//div[@class='inventory_item_name']")
+    PRODUCT_NAME_FROM_ADDED_PRODUCTS = (By.XPATH, "./ancestor::div[@class='cart_item_label']//div["
+                                                  "@class='inventory_item_name']")
 
     def __init__(self, driver):
         super().__init__(driver)
@@ -22,7 +23,6 @@ class CartPage(BasePage):
         return self.is_element_displayed(self.CART_TITLE)
 
     def is_item_in_cart_by_name(self, item_name):
-        """Перевіряє, чи відображається товар з заданою назвою у кошику."""
         locator = self.CART_ITEM_NAME_BY_TEXT(item_name)
         return self.is_element_displayed(locator)
 

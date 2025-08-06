@@ -1,6 +1,5 @@
 from selenium.webdriver.common.by import By
 from faker import Faker
-
 from pages.base_page import BasePage
 from pages.checkout_page_2 import CheckoutPageTwo
 
@@ -16,10 +15,6 @@ class CheckoutPageOne(BasePage):
         super().__init__(driver)
 
     def generate_checkout_data(self) -> dict:
-        """
-        Генерує випадкові дані для форми оформлення замовлення за допомогою Faker.
-        Повертає словник з даними.
-        """
         faker = Faker('uk_UA')
         test_data = {
             "first_name": faker.first_name(),

@@ -23,17 +23,12 @@ def config():
     return config
 
 
-# Ця фікстура налаштовує і запускає браузер з розширеними параметрами
 @pytest.fixture(scope="function")
 def driver(config):
     base_url = config['UI_SAUCEDEMO']['BASE_URL']
-
-    # Створюємо тимчасову папку для профілю, щоб тестувати в чистому середовищі
     temp_profile_dir = tempfile.mkdtemp()
-
     chrome_options = Options()
 
-    # Головне: режим інкогніто + відключення перевірок
     chrome_options.add_argument("--incognito")
     chrome_options.add_argument(f"--user-data-dir={temp_profile_dir}")
     chrome_options.add_argument("--no-first-run")
@@ -47,46 +42,37 @@ def driver(config):
     chrome_options.add_argument("--disable-translate")
     chrome_options.add_argument("--start-maximized")
 
-    # Відключення features, які відповідають за перевірку паролів
     chrome_options.add_argument(
         "--disable-features=PasswordCheck,AutofillServerCommunication,PasswordManagerOnboarding,"
         "OptimizationGuideModelDownloading,Translate")
 
-    # Повна заборона менеджера паролів
     chrome_options.add_experimental_option("prefs", {
         "credentials_enable_service": False,
         "profile.password_manager_enabled": False,
         "profile.default_content_setting_values.notifications": 2
     })
 
-    # Використовуємо ChromeDriverManager для управління драйвером
     try:
         service = ChromeService(ChromeDriverManager().install())
     except Exception as e:
-        pytest.fail(f"Не вдалося встановити ChromeDriver: {e}")
-
+        pytest.fail(f"Fail is ChromeDriver installation: {e}")
     driver = webdriver.Chrome(service=service, options=chrome_options)
     driver.get(base_url)
 
     yield driver
 
     driver.quit()
-    # Видаляємо тимчасовий каталог після завершення тесту
     shutil.rmtree(temp_profile_dir, ignore_errors=True)
 
 
-# Додаємо скриншот до звіту у випадку падіння тесту
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    # This function is a hook that runs after each test and gets its result
     outcome = yield
     report = outcome.get_result()
 
     if report.when == "call" and report.failed:
-        # Check if the test failed and has a driver fixture
         try:
             driver = item.funcargs['driver']
-            # Take a screenshot
             allure.attach(
                 driver.get_screenshot_as_png(),
                 name="screenshot",
@@ -106,33 +92,21 @@ def logged_in_standard_user(driver, config, login_page, products_page):
 
 @pytest.fixture(scope="function")
 def login_page(driver):
-    """
-    Фікстура, що надає об'єкт LoginPage для UI-тестів.
-    """
     return LoginPage(driver)
 
 
 @pytest.fixture(scope="function")
 def products_page(driver):
-    """
-    Фікстура, що надає об'єкт ProductsPage для UI-тестів.
-    """
     return ProductsPage(driver)
 
 
 @pytest.fixture(scope="function")
 def cart_page(driver):
-    """
-    Фікстура, що надає об'єкт CartPage для UI-тестів.
-    """
     return CartPage(driver)
 
 
 @pytest.fixture(scope="function")
 def checkout_page_1(driver):
-    """
-    Фікстура, що надає об'єкт CheckoutPage для UI-тестів.
-    """
     return CheckoutPageOne(driver)
 
 
@@ -161,10 +135,8 @@ def created_pet_id(pet_api_client):
     }
     create_response = pet_api_client.create_pet(pet_data)
     assert create_response.status_code == 200
-    print(f"\n✅ Фікстура: створено тваринку з ID {pet_id} для тесту.")
     yield pet_id
     pet_api_client.delete_pet(pet_id)
-    print(f"\n✅ Фікстура: тваринку з ID {pet_id} видалено після тесту.")
 
 
 @pytest.fixture(scope="function")

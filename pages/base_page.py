@@ -36,22 +36,11 @@ class BasePage:
         element.send_keys(text)
 
     def get_element_text(self, element_or_locator) -> str:
-        """
-        Отримує текст з елемента.
-        Приймає як локатор (кортеж), так і вже знайдений WebElement.
-        """
         if isinstance(element_or_locator, WebElement):
-            # Якщо передано WebElement, просто повертаємо його текст
             return element_or_locator.text
         elif isinstance(element_or_locator, tuple) and len(element_or_locator) == 2:
-            # Якщо передано локатор, спочатку знаходимо елемент, а потім повертаємо текст
             element = self.find_element(element_or_locator)
             return element.text
-        else:
-            raise TypeError(
-                f"Неправильний тип аргументу. Очікується локатор (tuple) або WebElement, "
-                f"але отримано {type(element_or_locator)}"
-            )
 
     def is_element_displayed(self, locator):
         try:
