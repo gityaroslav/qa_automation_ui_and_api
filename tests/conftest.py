@@ -7,6 +7,7 @@ import shutil
 import tempfile
 import random
 from endpoints.pet_api import PetAPI
+from endpoints.user_api import UserAPI
 from pages.cart_page import CartPage
 from pages.checkout_page_1 import CheckoutPageOne
 from pages.login_page import LoginPage
@@ -142,31 +143,14 @@ def pet_api_client(config):
     return PetAPI(base_url)
 
 
-# @pytest.fixture(scope="function")
-# def created_pet_id(pet_api_client):
-#     pet_id = random.randint(1000000, 9999999)
-#     pet_name = f"TestPet_{pet_id}"
-#     pet_status = "available"
-#     pet_data = {
-#         "id": pet_id,
-#         "name": pet_name,
-#         "status": pet_status
-#     }
-#     create_response = pet_api_client.create_pet(pet_data)
-#     assert create_response.status_code == 200
-#     print(f"\n✅ Фікстура: створено тваринку з ID {pet_id} для тесту.")
-#     yield pet_id
-#     pet_api_client.delete_pet(pet_id)
-#     print(f"\n✅ Фікстура: тваринку з ID {pet_id} видалено після тесту.")
+@pytest.fixture(scope="session")
+def user_api_client(config):
+    base_url = config['API']['BASE_URL']
+    return UserAPI(base_url)
 
 
 @pytest.fixture(scope="function")
 def created_pet_id(pet_api_client):
-    """
-    Фікстура створює нову тваринку, повертає її ID,
-    а потім видаляє її після завершення тесту.
-    """
-    # 1. Створення тваринки перед тестом
     pet_id = random.randint(1000000, 9999999)
     pet_name = f"TestPet_{pet_id}"
     pet_status = "available"
@@ -175,30 +159,28 @@ def created_pet_id(pet_api_client):
         "name": pet_name,
         "status": pet_status
     }
-
-    # Виводимо дані, які відправляємо на сервер
-    print(f"\n⚙️ Фікстура: Відправляю дані для створення: {pet_data}")
-
     create_response = pet_api_client.create_pet(pet_data)
-
-    # Виводимо статус-код і повну відповідь сервера
-    print(f"⚙️ Фікстура: Отримано статус-код {create_response.status_code}")
-    print(f"⚙️ Фікстура: Отримано відповідь: {create_response.text}")
-
-    assert create_response.status_code == 200, \
-        f"Помилка при створенні тваринки: {create_response.text}"
-
-    try:
-        response_json = create_response.json()
-        assert response_json['id'] == pet_id
-    except ValueError:
-        pytest.fail(f"Відповідь сервера не є валідним JSON: {create_response.text}")
-
-    print(f"✅ Фікстура: успішно створено тваринку з ID {pet_id}.")
-
-    # 2. Повертаємо ID для використання в тесті
+    assert create_response.status_code == 200
+    print(f"\n✅ Фікстура: створено тваринку з ID {pet_id} для тесту.")
     yield pet_id
-
-    # 3. Видалення тваринки після тесту (cleanup)
     pet_api_client.delete_pet(pet_id)
     print(f"\n✅ Фікстура: тваринку з ID {pet_id} видалено після тесту.")
+
+
+@pytest.fixture(scope="function")
+def created_username(user_api_client):
+    user_id = random.randint(1000000, 9999999)
+    user_data = {
+        "id": user_id,
+        "username": f"Test_Name_{user_id}",
+        "firstName": f"Test_First_{user_id}",
+        "lastName": f"Test_Second_{user_id}",
+        "email": f"mail_{user_id}@test.com",
+        "password": user_id,
+        "phone": f"093{user_id}",
+        "userStatus": 0
+    }
+    create_user_response = user_api_client.create_user(user_data)
+    assert create_user_response.status_code == 200
+    yield user_data["username"]
+    user_api_client.delete_user(user_data["username"])
