@@ -1,0 +1,54 @@
+import requests
+
+
+class PetAPI:
+    """
+    Клас для взаємодії з Petstore API для операцій над тваринками.
+    """
+
+    def __init__(self, base_url="https://petstore.swagger.io/v2"):
+        self.base_url = base_url
+        self.pet_endpoint = f"{self.base_url}/pet"
+
+    def create_pet(self, pet_data):
+        """Створює нову тваринку. Повертає об'єкт відповіді."""
+        headers = {
+            "Content-type": "application/json",
+            "accept": "application/json"
+        }
+        response = requests.post(self.pet_endpoint, json=pet_data, headers=headers)
+        return response
+
+    def update_pet(self, pet_data):
+        """Оновлює існуючу тваринку. Повертає об'єкт відповіді."""
+        headers = {
+            "Content-type": "application/json",
+            "accept": "application/json"
+        }
+        response = requests.put(self.pet_endpoint, json=pet_data, headers=headers)
+        return response
+
+    def get_pet_by_id(self, pet_id):
+        """Отримує тваринку за її ID. Повертає об'єкт відповіді."""
+        url = f"{self.pet_endpoint}/{pet_id}"
+        response = requests.get(url)
+        return response
+
+    def get_pet_by_status(self, status):
+        url = f"{self.pet_endpoint}/findByStatus"
+        headers = {
+            "Content-type": "application/json",
+            "accept": "application/json"
+        }
+        params = {"status": status}
+        response = requests.get(url, params=params, headers=headers)
+        return response
+
+    def delete_pet(self, pet_id):
+        """Видаляє тваринку за її ID. Повертає об'єкт відповіді."""
+        url = f"{self.pet_endpoint}/{pet_id}"
+        headers = {
+            "api_key": "special-key"  # API-ключ для авторизації видалення
+        }
+        response = requests.delete(url, headers=headers)
+        return response

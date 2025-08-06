@@ -1,3 +1,5 @@
+import pytest
+
 
 class TestNavigation:
     def test_logout_from_burger_menu(self, logged_in_standard_user):
@@ -6,6 +8,7 @@ class TestNavigation:
         login_page = products_page.click_burger_logout()
         assert login_page.id_login_box_visible()
 
+    @pytest.mark.xfail(reason="UI bug: 'Add to cart' buttons count does not reset after app state clear.")
     def test_reset_app_state_clears_cart(self, logged_in_standard_user):
         products_page = logged_in_standard_user
         initial_add_buttons = products_page.get_count_of_add_to_cart_buttons()

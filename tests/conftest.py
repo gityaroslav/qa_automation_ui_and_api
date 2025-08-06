@@ -3,9 +3,10 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 import configparser
-import os
 import shutil
 import tempfile
+import random
+from endpoints.pet_api import PetAPI
 from pages.cart_page import CartPage
 from pages.checkout_page_1 import CheckoutPageOne
 from pages.login_page import LoginPage
@@ -47,7 +48,8 @@ def driver(config):
 
     # Відключення features, які відповідають за перевірку паролів
     chrome_options.add_argument(
-        "--disable-features=PasswordCheck,AutofillServerCommunication,PasswordManagerOnboarding,OptimizationGuideModelDownloading,Translate")
+        "--disable-features=PasswordCheck,AutofillServerCommunication,PasswordManagerOnboarding,"
+        "OptimizationGuideModelDownloading,Translate")
 
     # Повна заборона менеджера паролів
     chrome_options.add_experimental_option("prefs", {
@@ -131,3 +133,72 @@ def checkout_page_1(driver):
     Фікстура, що надає об'єкт CheckoutPage для UI-тестів.
     """
     return CheckoutPageOne(driver)
+
+
+#API
+@pytest.fixture(scope="session")
+def pet_api_client(config):
+    base_url = config['API']['BASE_URL']
+    return PetAPI(base_url)
+
+
+# @pytest.fixture(scope="function")
+# def created_pet_id(pet_api_client):
+#     pet_id = random.randint(1000000, 9999999)
+#     pet_name = f"TestPet_{pet_id}"
+#     pet_status = "available"
+#     pet_data = {
+#         "id": pet_id,
+#         "name": pet_name,
+#         "status": pet_status
+#     }
+#     create_response = pet_api_client.create_pet(pet_data)
+#     assert create_response.status_code == 200
+#     print(f"\n✅ Фікстура: створено тваринку з ID {pet_id} для тесту.")
+#     yield pet_id
+#     pet_api_client.delete_pet(pet_id)
+#     print(f"\n✅ Фікстура: тваринку з ID {pet_id} видалено після тесту.")
+
+
+@pytest.fixture(scope="function")
+def created_pet_id(pet_api_client):
+    """
+    Фікстура створює нову тваринку, повертає її ID,
+    а потім видаляє її після завершення тесту.
+    """
+    # 1. Створення тваринки перед тестом
+    pet_id = random.randint(1000000, 9999999)
+    pet_name = f"TestPet_{pet_id}"
+    pet_status = "available"
+    pet_data = {
+        "id": pet_id,
+        "name": pet_name,
+        "status": pet_status
+    }
+
+    # Виводимо дані, які відправляємо на сервер
+    print(f"\n⚙️ Фікстура: Відправляю дані для створення: {pet_data}")
+
+    create_response = pet_api_client.create_pet(pet_data)
+
+    # Виводимо статус-код і повну відповідь сервера
+    print(f"⚙️ Фікстура: Отримано статус-код {create_response.status_code}")
+    print(f"⚙️ Фікстура: Отримано відповідь: {create_response.text}")
+
+    assert create_response.status_code == 200, \
+        f"Помилка при створенні тваринки: {create_response.text}"
+
+    try:
+        response_json = create_response.json()
+        assert response_json['id'] == pet_id
+    except ValueError:
+        pytest.fail(f"Відповідь сервера не є валідним JSON: {create_response.text}")
+
+    print(f"✅ Фікстура: успішно створено тваринку з ID {pet_id}.")
+
+    # 2. Повертаємо ID для використання в тесті
+    yield pet_id
+
+    # 3. Видалення тваринки після тесту (cleanup)
+    pet_api_client.delete_pet(pet_id)
+    print(f"\n✅ Фікстура: тваринку з ID {pet_id} видалено після тесту.")
