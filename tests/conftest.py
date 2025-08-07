@@ -14,6 +14,7 @@ from pages.login_page import LoginPage
 from pages.products_page import ProductsPage
 from selenium.webdriver.chrome.options import Options
 import allure
+import os
 
 
 @pytest.fixture(scope="session")
@@ -114,13 +115,15 @@ def checkout_page_1(driver):
 @pytest.fixture(scope="session")
 def pet_api_client(config):
     base_url = config['API']['BASE_URL']
-    return PetAPI(base_url)
+    api_key = os.getenv("API_KEY", None)
+    return PetAPI(base_url, api_key=api_key)
 
 
 @pytest.fixture(scope="session")
 def user_api_client(config):
     base_url = config['API']['BASE_URL']
-    return UserAPI(base_url)
+    api_key = os.getenv("API_KEY", None)
+    return UserAPI(base_url, api_key=api_key)
 
 
 @pytest.fixture(scope="function")

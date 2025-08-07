@@ -3,9 +3,11 @@ import requests
 
 class UserAPI:
 
-    def __init__(self, base_url="https://petstore.swagger.io/v2"):
+    def __init__(self, base_url="https://petstore.swagger.io/v2", api_key=None):
         self.base_url = base_url
         self.user_endpoint = f"{self.base_url}/user"
+        if api_key:
+            self.headers["api_key"] = api_key  # Add API key to headers if provided
 
     def create_user(self, user_data):
         headers = {

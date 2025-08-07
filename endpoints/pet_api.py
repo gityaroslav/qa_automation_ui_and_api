@@ -3,9 +3,11 @@ import requests
 
 class PetAPI:
 
-    def __init__(self, base_url="https://petstore.swagger.io/v2"):
+    def __init__(self, base_url="https://petstore.swagger.io/v2", api_key=None):
         self.base_url = base_url
         self.pet_endpoint = f"{self.base_url}/pet"
+        if api_key:
+            self.headers["api_key"] = api_key  # Add API key to headers if provided
 
     def create_pet(self, pet_data):
         headers = {
@@ -41,7 +43,6 @@ class PetAPI:
     def delete_pet(self, pet_id):
         url = f"{self.pet_endpoint}/{pet_id}"
         headers = {
-            "api_key": "special-key"
         }
         response = requests.delete(url, headers=headers)
         return response

@@ -2,7 +2,7 @@ __pycache__/
 *.pyc
 *.log
 .pytest_cache/
-venv/
+.venv/
 .env
 report.html
 chromedriver.exe
