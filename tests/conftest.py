@@ -115,15 +115,13 @@ def checkout_page_1(driver):
 @pytest.fixture(scope="session")
 def pet_api_client(config):
     base_url = config['API']['BASE_URL']
-    api_key = os.getenv("API_KEY", None)
-    return PetAPI(base_url, api_key=api_key)
+    return PetAPI(base_url)
 
 
 @pytest.fixture(scope="session")
 def user_api_client(config):
     base_url = config['API']['BASE_URL']
-    api_key = os.getenv("API_KEY", None)
-    return UserAPI(base_url, api_key=api_key)
+    return UserAPI(base_url)
 
 
 @pytest.fixture(scope="function")
