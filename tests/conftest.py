@@ -3,8 +3,6 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 import configparser
-import shutil
-import tempfile
 import random
 from endpoints.pet_api import PetAPI
 from endpoints.user_api import UserAPI
@@ -14,7 +12,7 @@ from pages.login_page import LoginPage
 from pages.products_page import ProductsPage
 from selenium.webdriver.chrome.options import Options
 import allure
-import os
+
 
 
 @pytest.fixture(scope="session")
@@ -26,44 +24,25 @@ def config():
 
 @pytest.fixture(scope="function")
 def driver(config):
+
     base_url = config['UI_SAUCEDEMO']['BASE_URL']
-    temp_profile_dir = tempfile.mkdtemp()
     chrome_options = Options()
-
-    chrome_options.add_argument("--incognito")
-    chrome_options.add_argument(f"--user-data-dir={temp_profile_dir}")
-    chrome_options.add_argument("--no-first-run")
-    chrome_options.add_argument("--no-default-browser-check")
-    chrome_options.add_argument("--disable-default-apps")
-    chrome_options.add_argument("--disable-extensions")
-    chrome_options.add_argument("--disable-popup-blocking")
-    chrome_options.add_argument("--disable-notifications")
-    chrome_options.add_argument("--disable-infobars")
-    chrome_options.add_argument("--disable-save-password-bubble")
-    chrome_options.add_argument("--disable-translate")
-    chrome_options.add_argument("--start-maximized")
-
-    chrome_options.add_argument(
-        "--disable-features=PasswordCheck,AutofillServerCommunication,PasswordManagerOnboarding,"
-        "OptimizationGuideModelDownloading,Translate")
-
-    chrome_options.add_experimental_option("prefs", {
-        "credentials_enable_service": False,
-        "profile.password_manager_enabled": False,
-        "profile.default_content_setting_values.notifications": 2
-    })
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("--disable-gpu")
 
     try:
         service = ChromeService(ChromeDriverManager().install())
     except Exception as e:
-        pytest.fail(f"Fail is ChromeDriver installation: {e}")
+        pytest.fail(f"Failed to install ChromeDriver: {e}")
     driver = webdriver.Chrome(service=service, options=chrome_options)
     driver.get(base_url)
 
     yield driver
 
     driver.quit()
-    shutil.rmtree(temp_profile_dir, ignore_errors=True)
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
